@@ -978,6 +978,9 @@ public:
 		if((m_dwExtendedStyle & SPLIT_FIXEDBARSIZE) == 0)
 		{
 			m_cxySplitBar = ::GetSystemMetrics(m_bVertical ? SM_CXSIZEFRAME : SM_CYSIZEFRAME);
+#if (_MSC_VER >= 1700)
+			m_cxySplitBar += ::GetSystemMetrics(SM_CXPADDEDBORDER);
+#endif // (_MSC_VER >= 1700)
 		}
 
 		T* pT = static_cast<T*>(this);
