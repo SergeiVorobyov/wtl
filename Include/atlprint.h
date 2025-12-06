@@ -806,7 +806,7 @@ public:
 	}
 
 // Painting helpers
-	void DoPaint(CDCHandle dc)
+	void DoPaint(CDCHandle /*dc*/)
 	{
 		// this one is not used
 	}
