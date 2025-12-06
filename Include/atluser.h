@@ -1177,22 +1177,24 @@ inline HBITMAP AtlLoadSysBitmapImage(WORD wBitmapID, UINT fuLoad = LR_DEFAULTCOL
 }
 #endif // OEMRESOURCE
 
-inline HCURSOR AtlLoadSysCursorImage(ATL::_U_STRINGorID cursor, UINT fuLoad = LR_DEFAULTCOLOR | LR_DEFAULTSIZE, int cxDesired = 0, int cyDesired = 0)
+inline HCURSOR AtlLoadSysCursorImage(ATL::_U_STRINGorID cursor, UINT fuLoad = LR_DEFAULTCOLOR | LR_DEFAULTSIZE | LR_SHARED, int cxDesired = 0, int cyDesired = 0)
 {
 #ifdef _DEBUG
 	WORD wID = LOWORD(cursor.m_lpstr);
 	ATLASSERT(((wID >= 32512) && (wID <= 32516)) || ((wID >= 32640) && (wID <= 32648)) || (wID == 32650) || (wID == 32651));
 	ATLASSERT((fuLoad & LR_LOADFROMFILE) == 0);   // this one doesn't load from a file
+	ATLASSERT((fuLoad & LR_SHARED) != 0);   // required
 #endif // _DEBUG
 	return (HCURSOR)::LoadImage(NULL, cursor.m_lpstr, IMAGE_CURSOR, cxDesired, cyDesired, fuLoad);
 }
 
-inline HICON AtlLoadSysIconImage(ATL::_U_STRINGorID icon, UINT fuLoad = LR_DEFAULTCOLOR | LR_DEFAULTSIZE, int cxDesired = 0, int cyDesired = 0)
+inline HICON AtlLoadSysIconImage(ATL::_U_STRINGorID icon, UINT fuLoad = LR_DEFAULTCOLOR | LR_DEFAULTSIZE | LR_SHARED, int cxDesired = 0, int cyDesired = 0)
 {
 #ifdef _DEBUG
 	WORD wID = LOWORD(icon.m_lpstr);
 	ATLASSERT((wID >= 32512) && (wID <= 32517));
 	ATLASSERT((fuLoad & LR_LOADFROMFILE) == 0);   // this one doesn't load from a file
+	ATLASSERT((fuLoad & LR_SHARED) != 0);   // required
 #endif // _DEBUG
 	return (HICON)::LoadImage(NULL, icon.m_lpstr, IMAGE_ICON, cxDesired, cyDesired, fuLoad);
 }
