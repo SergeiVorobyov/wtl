@@ -185,8 +185,8 @@ function main()
 		}
 	}
 
-// Search for Visual Studio 2017/2019/2022
-	var nVersionsNew = 3;
+// Search for Visual Studio 2017/2019/2022/2026
+	var nVersionsNew = 4;
 
 	var strWizardFolderNew = "Common7\\IDE\\VC\\vcprojects";
 
@@ -194,21 +194,25 @@ function main()
 	astrVersionsNew[0] = "Visual Studio 2017 (15.0)";
 	astrVersionsNew[1] = "Visual Studio 2019 (16.0)";
 	astrVersionsNew[2] = "Visual Studio 2022 (17.0)";
+	astrVersionsNew[3] = "Visual Studio 2026 (18.0)";
 
 	var astrWizVerNew = new Array();
 	astrWizVerNew[0] = "15.0";
 	astrWizVerNew[1] = "16.0";
 	astrWizVerNew[2] = "17.0";
+	astrWizVerNew[3] = "17.0";
 
 	var astrParamVerNew = new Array();
 	astrParamVerNew[0] = "15";
 	astrParamVerNew[1] = "16";
 	astrParamVerNew[2] = "17";
+	astrParamVerNew[3] = "18";
 
 	var astrFilterVer = new Array();
 	astrFilterVer[0] = "[15.0,16.0]";
 	astrFilterVer[1] = "[16.0,17.0]";
 	astrFilterVer[2] = "[17.0,18.0]";
+	astrFilterVer[3] = "[18.0,19.0]";
 
 	// Ensure that we can run vswhere.exe
 	var strProgFileRegKey_x86 = "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\ProgramFilesDir (x86)";
