@@ -4577,10 +4577,10 @@ public:
 		return (BOOL)::SendMessage(this->m_hWnd, TVM_ENSUREVISIBLE, 0, (LPARAM)hItem);
 	}
 
-	BOOL SortChildrenCB(LPTVSORTCB pSort, BOOL bRecurse = FALSE)
+	BOOL SortChildrenCB(LPTVSORTCB pSort, BOOL /*bRecurse*/ = FALSE)   // Note: bRecurse is not used
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		return (BOOL)::SendMessage(this->m_hWnd, TVM_SORTCHILDRENCB, (WPARAM)bRecurse, (LPARAM)pSort);
+		return (BOOL)::SendMessage(this->m_hWnd, TVM_SORTCHILDRENCB, 0, (LPARAM)pSort);
 	}
 
 	CImageList RemoveImageList(int nImageList)
