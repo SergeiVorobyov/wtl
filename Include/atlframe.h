@@ -1882,6 +1882,47 @@ public:
 		return m_UIElements.Add(e);
 	}
 
+// Remove elements
+	BOOL UIRemoveMenuBar(HWND hWnd)                // menu bar (main menu)
+	{
+		if(hWnd == NULL)
+			return FALSE;
+		_AtlUpdateUIElement e;
+		e.m_hWnd = hWnd;
+		e.m_wType = UPDUI_MENUBAR;
+		return m_UIElements.Remove(e);
+	}
+
+	BOOL UIRemoveToolBar(HWND hWnd)                // toolbar
+	{
+		if(hWnd == NULL)
+			return FALSE;
+		_AtlUpdateUIElement e;
+		e.m_hWnd = hWnd;
+		e.m_wType = UPDUI_TOOLBAR;
+		return m_UIElements.Remove(e);
+	}
+
+	BOOL UIRemoveStatusBar(HWND hWnd)              // status bar
+	{
+		if(hWnd == NULL)
+			return FALSE;
+		_AtlUpdateUIElement e;
+		e.m_hWnd = hWnd;
+		e.m_wType = UPDUI_STATUSBAR;
+		return m_UIElements.Remove(e);
+	}
+
+	BOOL UIRemoveChildWindowContainer(HWND hWnd)   // child window
+	{
+		if(hWnd == NULL)
+			return FALSE;
+		_AtlUpdateUIElement e;
+		e.m_hWnd = hWnd;
+		e.m_wType = UPDUI_CHILDWINDOW;
+		return m_UIElements.Remove(e);
+	}
+
 // Message map for popup menu updates and accelerator blocking
 	BEGIN_MSG_MAP(CUpdateUIBase)
 		MESSAGE_HANDLER(WM_INITMENUPOPUP, OnInitMenuPopup)
