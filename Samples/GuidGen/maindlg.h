@@ -37,6 +37,7 @@ public:
 
 	BEGIN_MSG_MAP(CMainDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
 		COMMAND_ID_HANDLER(IDC_NEWGUID, OnNewGUID)
@@ -77,6 +78,7 @@ public:
 
 		// register object for message filtering
 		CMessageLoop* pLoop = _Module.GetMessageLoop();
+		ATLASSERT(pLoop != NULL);
 		pLoop->AddMessageFilter(this);
 
 		CRegKeyEx reg;
@@ -98,6 +100,16 @@ public:
 		return TRUE;
 	}
 
+	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+	{
+		// unregister message filtering
+		CMessageLoop* pLoop = _Module.GetMessageLoop();
+		ATLASSERT(pLoop != NULL);
+		pLoop->RemoveMessageFilter(this);
+
+		bHandled = FALSE;
+		return 1;
+	}
 	void GetFormattedGuid(TCHAR* rString)
 	{
 		// load appropriate formatting string

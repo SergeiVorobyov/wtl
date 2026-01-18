@@ -165,6 +165,7 @@ public:
 
 	BEGIN_MSG_MAP_EX(CMainFrame)
 		MSG_WM_CREATE(OnCreate)
+		MSG_WM_DESTROY(OnDestroy)
 		MSG_WM_CONTEXTMENU(OnContextMenu)
 
 		COMMAND_ID_HANDLER_EX(ID_FILE_OPEN, OnFileOpen)
@@ -240,12 +241,24 @@ public:
 		UISetCheck(ID_VIEW_TOOLBAR, 1);
 		UISetCheck(ID_VIEW_STATUS_BAR, 1);
 
+		// register object for message filtering and idle updates
 		CMessageLoop* pLoop = _Module.GetMessageLoop();
 		ATLASSERT(pLoop != NULL);
 		pLoop->AddMessageFilter(this);
 		pLoop->AddIdleHandler(this);
 
 		return 0;
+	}
+
+	void OnDestroy()
+	{
+		// unregister message filtering and idle updates
+		CMessageLoop* pLoop = _Module.GetMessageLoop();
+		ATLASSERT(pLoop != NULL);
+		pLoop->RemoveMessageFilter(this);
+		pLoop->RemoveIdleHandler(this);
+
+		SetMsgHandled(FALSE);
 	}
 
 	void OnContextMenu(CWindow wnd, CPoint point)

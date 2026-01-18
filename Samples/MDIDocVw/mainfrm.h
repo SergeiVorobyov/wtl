@@ -646,6 +646,7 @@ public:
 
 	BEGIN_MSG_MAP(CMDIFrame)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER(ID_FILE_NEWBOUNCE, OnBounce)
 		COMMAND_ID_HANDLER(ID_FILE_NEWHELLO, OnHello)
@@ -708,13 +709,26 @@ public:
 		UIEnable(ID_SPEED_SLOW, FALSE);
 		UIEnable(ID_SPEED_FAST, FALSE);
 
+		// register object for message filtering and idle updates
 		CMessageLoop* pLoop = _Module.GetMessageLoop();
+		ATLASSERT(pLoop != NULL);
 		pLoop->AddMessageFilter(this);
 		pLoop->AddIdleHandler(this);
 
 		return 0;
 	}
 
+	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+	{
+		// unregister message filtering and idle updates
+		CMessageLoop* pLoop = _Module.GetMessageLoop();
+		ATLASSERT(pLoop != NULL);
+		pLoop->RemoveMessageFilter(this);
+		pLoop->RemoveIdleHandler(this);
+
+		bHandled = FALSE;
+		return 1;
+	}
 
 	LRESULT OnMDISetMenu(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 	{

@@ -30,6 +30,7 @@ public:
 
 	BEGIN_MSG_MAP(CMainFrame)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER(ID_FILE_NEW, OnFileNew)
 		COMMAND_ID_HANDLER(ID_EDIT_CUT, OnEditCutOrCopy)
@@ -94,6 +95,18 @@ public:
 		UIEnable(ID_EDIT_PASTE, FALSE);
 
 		return 0;
+	}
+
+	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+	{
+		// unregister message filtering and idle updates
+		CMessageLoop* pLoop = _Module.GetMessageLoop();
+		ATLASSERT(pLoop != NULL);
+		pLoop->RemoveMessageFilter(this);
+		pLoop->RemoveIdleHandler(this);
+
+		bHandled = FALSE;
+		return 1;
 	}
 
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)

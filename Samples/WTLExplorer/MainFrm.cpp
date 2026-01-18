@@ -280,11 +280,25 @@ LRESULT CMainFrame::OnCreate(UINT, WPARAM, LPARAM, BOOL&)
 	UISetCheck(ID_VIEW_DETAILS, 1);
 	UISetCheck(ID_VIEW_SORT_NAME, 1);
 
+	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
+	ATLASSERT(pLoop != NULL);
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
 	return 0;
+}
+
+LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+{
+	// unregister message filtering and idle updates
+	CMessageLoop* pLoop = _Module.GetMessageLoop();
+	ATLASSERT(pLoop != NULL);
+	pLoop->RemoveMessageFilter(this);
+	pLoop->RemoveIdleHandler(this);
+
+	bHandled = FALSE;
+	return 1;
 }
 
 LRESULT CMainFrame::OnViewChange(WORD, WORD wID, HWND, BOOL&)

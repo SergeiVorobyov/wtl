@@ -135,6 +135,7 @@ public:
 
 	BEGIN_MSG_MAP(CMainFrame)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		COMMAND_RANGE_HANDLER(ID_VIEW_ICONS, ID_VIEW_LIST, OnViewChange)
 		COMMAND_RANGE_HANDLER(ID_VIEW_SORT_NAME, ID_VIEW_SORT_ATTR, OnViewSort)
 		COMMAND_ID_HANDLER(ID_COMBO_GO, OnComboGo)
@@ -181,6 +182,7 @@ public:
 	END_UPDATE_UI_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT OnViewChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnComboGo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
