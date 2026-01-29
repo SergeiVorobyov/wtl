@@ -1847,6 +1847,7 @@ public:
 			HDC hDC = ::CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
 			LONG yPerInch = ::GetDeviceCaps(hDC, LOGPIXELSY);
 			this->m_lf.lfHeight = -(int)((cf.yHeight * yPerInch) / 1440);
+			::DeleteDC(hDC);
 		}
 		else
 			this->m_lf.lfHeight = 0;
