@@ -1503,13 +1503,13 @@ public:
 	DWORD SetExtendedStyle(DWORD dwStyle, DWORD dwMask)
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		return ::SendMessage(this->m_hWnd, EM_SETEXTENDEDSTYLE, dwMask, dwStyle);
+		return (DWORD)::SendMessage(this->m_hWnd, EM_SETEXTENDEDSTYLE, dwMask, dwStyle);
 	}
 
 	DWORD GetExtendedStyle() const
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		return ::SendMessage(this->m_hWnd, EM_GETEXTENDEDSTYLE, 0, 0L);
+		return (DWORD)::SendMessage(this->m_hWnd, EM_GETEXTENDEDSTYLE, 0, 0L);
 	}
 
 	BOOL SetEndOfLine(EC_ENDOFLINE eolType)
@@ -1545,7 +1545,7 @@ public:
 	DWORD GetCaretIndex() const
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		return ::SendMessage(this->m_hWnd, EM_GETCARETINDEX, 0, 0L);
+		return (DWORD)::SendMessage(this->m_hWnd, EM_GETCARETINDEX, 0, 0L);
 	}
 
 	BOOL GetZoom(int& nNum, int& nDen) const
@@ -1557,27 +1557,35 @@ public:
 	BOOL SetZoom(int nNum, int nDen)
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		ATLASSERT((nNum >= 0) && (nNum <= 64));
-		ATLASSERT((nDen >= 0) && (nDen <= 64));
+		if((nNum == 0) && (nDen == 0))
+			return SetZoomOff();
+		ATLASSERT((nDen != 0) && ((nNum / nDen) < 64));
+		ATLASSERT((nNum != 0) && ((nDen / nNum) < 64));
 		return (BOOL)::SendMessage(this->m_hWnd, EM_SETZOOM, nNum, nDen);
+	}
+
+	BOOL SetZoomOff()
+	{
+		ATLASSERT(::IsWindow(this->m_hWnd));
+		return (BOOL)::SendMessage(this->m_hWnd, EM_SETZOOM, 0, 0L);
 	}
 
 	DWORD GetFileLineFromChar(DWORD dwCharIndex) const
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		return ::SendMessage(this->m_hWnd, EM_FILELINEFROMCHAR, dwCharIndex, 0L);
+		return (DWORD)::SendMessage(this->m_hWnd, EM_FILELINEFROMCHAR, dwCharIndex, 0L);
 	}
 
 	DWORD GetFileLineIndex(DWORD dwLineNum) const
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		return ::SendMessage(this->m_hWnd, EM_FILELINEINDEX, dwLineNum, 0L);
+		return (DWORD)::SendMessage(this->m_hWnd, EM_FILELINEINDEX, dwLineNum, 0L);
 	}
 
 	DWORD GetFileLineLength(DWORD dwCharIndex) const
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		return ::SendMessage(this->m_hWnd, EM_FILELINELENGTH, dwCharIndex, 0L);
+		return (DWORD)::SendMessage(this->m_hWnd, EM_FILELINELENGTH, dwCharIndex, 0L);
 	}
 
 	DWORD GetFileLine(DWORD dwLineNum, LPTSTR lpstrLine, WORD wLen) const
@@ -1585,7 +1593,7 @@ public:
 		ATLASSERT(::IsWindow(this->m_hWnd));
 		WORD* pw = (WORD*)lpstrLine;
 		*pw = wLen;
-		return ::SendMessage(this->m_hWnd, EM_GETFILELINE, dwLineNum, (LPARAM)lpstrLine);
+		return (DWORD)::SendMessage(this->m_hWnd, EM_GETFILELINE, dwLineNum, (LPARAM)lpstrLine);
 	}
 
 #ifdef __ATLSTR_H__
@@ -1611,7 +1619,7 @@ public:
 	DWORD GetFileLineCount() const
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		return ::SendMessage(this->m_hWnd, EM_GETFILELINECOUNT, 0, 0L);
+		return (DWORD)::SendMessage(this->m_hWnd, EM_GETFILELINECOUNT, 0, 0L);
 	}
 #endif // defined(NTDDI_VERSION) && defined(NTDDI_WIN10_RS5) && (NTDDI_VERSION >= NTDDI_WIN10_RS5)
 };
@@ -7695,8 +7703,10 @@ public:
 	BOOL SetZoom(int nNum, int nDen)
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		ATLASSERT((nNum >= 0) && (nNum <= 64));
-		ATLASSERT((nDen >= 0) && (nDen <= 64));
+		if((nNum == 0) && (nDen == 0))
+			return SetZoomOff();
+		ATLASSERT((nDen != 0) && ((nNum / nDen) < 64));
+		ATLASSERT((nNum != 0) && ((nDen / nNum) < 64));
 		return (BOOL)::SendMessage(this->m_hWnd, EM_SETZOOM, nNum, nDen);
 	}
 
