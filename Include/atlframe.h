@@ -2883,6 +2883,16 @@ struct _AtlDlgResizeMap
 #define END_DLGRESIZE_GROUP() \
 		{ -1, _DLSZ_END_GROUP },
 
+// DPI support
+#ifdef _WTL_DPI_SUPPORT
+  #if (WINVER < 0x0605)
+	#error WTL DPI support requires WINVER >= 0x0605
+  #endif
+  #if (_WIN32_WINNT < 0x0600)
+	#error WTL DPI support requires _WIN32_WINNT >= 0x0600
+  #endif
+#endif
+
 
 template <class T>
 class CDialogResize
@@ -2932,10 +2942,16 @@ public:
 	SIZE m_sizeDialog;
 	POINT m_ptMinTrackSize;
 	bool m_bGripper;
+#ifdef _WTL_DPI_SUPPORT
+	UINT m_uDPI;
+#endif
 
 
 // Constructor
 	CDialogResize() : m_bGripper(false)
+#ifdef _WTL_DPI_SUPPORT
+                        , m_uDPI(0U)
+#endif
 	{
 		m_sizeDialog.cx = 0;
 		m_sizeDialog.cy = 0;
@@ -2943,14 +2959,51 @@ public:
 		m_ptMinTrackSize.y = -1;
 	}
 
+// DPI helpers
+#ifdef _WTL_DPI_SUPPORT
+	inline int _DPI(int n) const
+	{
+		return ::MulDiv(n, m_uDPI, USER_DEFAULT_SCREEN_DPI);
+	}
+
+	inline int _DPI_r(int n) const
+	{
+		return ::MulDiv(n, USER_DEFAULT_SCREEN_DPI, m_uDPI);
+	}
+
+	inline void _DPI_RECT(RECT& rect) const
+	{
+		rect.left = _DPI(rect.left);
+		rect.top = _DPI(rect.top);
+		rect.right = _DPI(rect.right);
+		rect.bottom = _DPI(rect.bottom);
+	}
+
+	inline void _DPI_RECT_r(RECT& rect) const
+	{
+		rect.left = _DPI_r(rect.left);
+		rect.top = _DPI_r(rect.top);
+		rect.right = _DPI_r(rect.right);
+		rect.bottom = _DPI_r(rect.bottom);
+	}
+#else // !_WTL_DPI_SUPPORT
+	#define _DPI(n)           (n)
+	#define _DPI_r(n)         (n)
+	#define _DPI_RECT(rect)   ((void)0)
+	#define _DPI_RECT_r(rect) ((void)0)
+#endif // !_WTL_DPI_SUPPORT
+
 // Operations
 	void DlgResize_Init(bool bAddGripper = true, bool bUseMinTrackSize = true, DWORD dwForceStyle = WS_CLIPCHILDREN)
 	{
 		T* pT = static_cast<T*>(this);
 		ATLASSERT(::IsWindow(pT->m_hWnd));
 
-		DWORD dwStyle = pT->GetStyle();
+#ifdef _WTL_DPI_SUPPORT
+		m_uDPI = ::GetDpiForWindow(pT->m_hWnd);
+#endif
 
+		DWORD dwStyle = pT->GetStyle();
 #ifdef _DEBUG
 		// Debug only: Check if top level dialogs have a resizeable border.
 		if(((dwStyle & WS_CHILD) == 0) && ((dwStyle & WS_THICKFRAME) == 0))
@@ -2988,8 +3041,8 @@ public:
 		// Get initial dialog client size
 		RECT rectDlg = {};
 		pT->GetClientRect(&rectDlg);
-		m_sizeDialog.cx = rectDlg.right;
-		m_sizeDialog.cy = rectDlg.bottom;
+		m_sizeDialog.cx = _DPI_r(rectDlg.right);
+		m_sizeDialog.cy = _DPI_r(rectDlg.bottom);
 
 		// Create gripper if requested
 		m_bGripper = false;
@@ -3008,6 +3061,7 @@ public:
 					RECT rectCtl = {};
 					wndGripper.GetWindowRect(&rectCtl);
 					::MapWindowPoints(NULL, pT->m_hWnd, (LPPOINT)&rectCtl, 2);
+					_DPI_RECT_r(rectCtl);
 					_AtlDlgResizeData data = { ATL_IDW_STATUS_BAR, DLSZ_MOVE_X | DLSZ_MOVE_Y | DLSZ_REPAINT | _DLSZ_GRIPPER, { rectCtl.left, rectCtl.top, rectCtl.right, rectCtl.bottom } };
 					m_arrData.Add(data);
 				}
@@ -3021,15 +3075,15 @@ public:
 			{
 				RECT rect = {};
 				pT->GetClientRect(&rect);
-				m_ptMinTrackSize.x = rect.right - rect.left;
-				m_ptMinTrackSize.y = rect.bottom - rect.top;
+				m_ptMinTrackSize.x = _DPI_r(rect.right) - _DPI_r(rect.left);
+				m_ptMinTrackSize.y = _DPI_r(rect.bottom) - _DPI_r(rect.top);
 			}
 			else
 			{
 				RECT rect = {};
 				pT->GetWindowRect(&rect);
-				m_ptMinTrackSize.x = rect.right - rect.left;
-				m_ptMinTrackSize.y = rect.bottom - rect.top;
+				m_ptMinTrackSize.x = _DPI_r(rect.right) - _DPI_r(rect.left);
+				m_ptMinTrackSize.y = _DPI_r(rect.bottom) - _DPI_r(rect.top);
 			}
 		}
 
@@ -3070,6 +3124,7 @@ public:
 				RECT rectCtl = {};
 				ctl.GetWindowRect(&rectCtl);
 				::MapWindowPoints(NULL, pT->m_hWnd, (LPPOINT)&rectCtl, 2);
+				_DPI_RECT_r(rectCtl);
 
 				DWORD dwGroupFlag = ((nGroupStart != -1) && (m_arrData.GetSize() == nGroupStart)) ? _DLSZ_BEGIN_GROUP : 0;
 				_AtlDlgResizeData data = { pMap->m_nCtlID, pMap->m_dwResizeFlags | dwGroupFlag, { rectCtl.left, rectCtl.top, rectCtl.right, rectCtl.bottom } };
@@ -3087,10 +3142,10 @@ public:
 		// Restrict minimum size if requested
 		if(((pT->GetStyle() & WS_CHILD) != 0) && (m_ptMinTrackSize.x != -1) && (m_ptMinTrackSize.y != -1))
 		{
-			if(cxWidth < m_ptMinTrackSize.x)
-				cxWidth = m_ptMinTrackSize.x;
-			if(cyHeight < m_ptMinTrackSize.y)
-				cyHeight = m_ptMinTrackSize.y;
+			if(cxWidth < _DPI(m_ptMinTrackSize.x))
+				cxWidth = _DPI(m_ptMinTrackSize.x);
+			if(cyHeight < _DPI(m_ptMinTrackSize.y))
+				cyHeight = _DPI(m_ptMinTrackSize.y);
 		}
 
 		BOOL bVisible = pT->IsWindowVisible();
@@ -3113,6 +3168,7 @@ public:
 					rectGroup.right = __max(rectGroup.right, m_arrData[i + j].m_rect.right);
 					rectGroup.bottom = __max(rectGroup.bottom, m_arrData[i + j].m_rect.bottom);
 				}
+				_DPI_RECT(rectGroup);
 
 				for(j = 0; j < nGroupCount; j++)
 				{
@@ -3141,6 +3197,9 @@ public:
 	BEGIN_MSG_MAP(CDialogResize)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_GETMINMAXINFO, OnGetMinMaxInfo)
+#ifdef _WTL_DPI_SUPPORT
+		MESSAGE_HANDLER(WM_DPICHANGED, OnDpiChanged)
+#endif
 	END_MSG_MAP()
 
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
@@ -3159,6 +3218,7 @@ public:
 			ATLASSERT(::IsWindow(pT->m_hWnd));
 			pT->DlgResize_UpdateLayout(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		}
+
 		return 0;
 	}
 
@@ -3167,10 +3227,26 @@ public:
 		if((m_ptMinTrackSize.x != -1) && (m_ptMinTrackSize.y != -1))
 		{
 			LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
-			lpMMI->ptMinTrackSize =  m_ptMinTrackSize;
+			lpMMI->ptMinTrackSize.x =  _DPI(m_ptMinTrackSize.x);
+			lpMMI->ptMinTrackSize.y =  _DPI(m_ptMinTrackSize.y);
 		}
+
 		return 0;
 	}
+
+#ifdef _WTL_DPI_SUPPORT
+	LRESULT OnDpiChanged(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		m_uDPI = LOWORD(wParam);
+
+		T* pT = static_cast<T*>(this);
+		RECT rect = {};
+		pT->GetClientRect(&rect);
+		pT->DlgResize_UpdateLayout(rect.right, rect.bottom);
+
+		return 0;
+	}
+#endif // _WTL_DPI_SUPPORT
 
 // Implementation
 	bool DlgResize_PositionControl(int cxWidth, int cyHeight, RECT& rectGroup, _AtlDlgResizeData& data, bool bGroup, 
@@ -3178,10 +3254,9 @@ public:
 	{
 		T* pT = static_cast<T*>(this);
 		ATLASSERT(::IsWindow(pT->m_hWnd));
-		ATL::CWindow ctl;
-		RECT rectCtl = {};
 
-		ctl = pT->GetDlgItem(data.m_nCtlID);
+		ATL::CWindow ctl = pT->GetDlgItem(data.m_nCtlID);
+		RECT rectCtl = {};
 		if(!ctl.GetWindowRect(&rectCtl))
 			return false;
 		::MapWindowPoints(NULL, pT->m_hWnd, (LPPOINT)&rectCtl, 2);
@@ -3190,18 +3265,18 @@ public:
 		{
 			if((data.m_dwResizeFlags & DLSZ_CENTER_X) != 0)
 			{
-				int cxRight = rectGroup.right + cxWidth - m_sizeDialog.cx;
-				int cxCtl = data.m_rect.right - data.m_rect.left;
+				int cxRight = rectGroup.right + cxWidth - _DPI(m_sizeDialog.cx);
+				int cxCtl = _DPI(data.m_rect.right) - _DPI(data.m_rect.left);
 				rectCtl.left = rectGroup.left + (cxRight - rectGroup.left - cxCtl) / 2;
 				rectCtl.right = rectCtl.left + cxCtl;
 			}
 			else if((data.m_dwResizeFlags & (DLSZ_SIZE_X | DLSZ_MOVE_X)) != 0)
 			{
-				rectCtl.left = rectGroup.left + ::MulDiv(data.m_rect.left - rectGroup.left, rectGroup.right - rectGroup.left + (cxWidth - m_sizeDialog.cx), rectGroup.right - rectGroup.left);
+				rectCtl.left = rectGroup.left + ::MulDiv(_DPI(data.m_rect.left) - rectGroup.left, rectGroup.right - rectGroup.left + (cxWidth - _DPI(m_sizeDialog.cx)), rectGroup.right - rectGroup.left);
 
 				if((data.m_dwResizeFlags & DLSZ_SIZE_X) != 0)
 				{
-					rectCtl.right = rectGroup.left + ::MulDiv(data.m_rect.right - rectGroup.left, rectGroup.right - rectGroup.left + (cxWidth - m_sizeDialog.cx), rectGroup.right - rectGroup.left);
+					rectCtl.right = rectGroup.left + ::MulDiv(_DPI(data.m_rect.right) - rectGroup.left, rectGroup.right - rectGroup.left + (cxWidth - _DPI(m_sizeDialog.cx)), rectGroup.right - rectGroup.left);
 
 					if(pDataPrev != NULL)
 					{
@@ -3209,31 +3284,31 @@ public:
 						RECT rcPrev = {};
 						ctlPrev.GetWindowRect(&rcPrev);
 						::MapWindowPoints(NULL, pT->m_hWnd, (LPPOINT)&rcPrev, 2);
-						int dxAdjust = (rectCtl.left - rcPrev.right) - (data.m_rect.left - pDataPrev->m_rect.right);
+						int dxAdjust = (rectCtl.left - rcPrev.right) - (_DPI(data.m_rect.left) - _DPI(pDataPrev->m_rect.right));
 						rcPrev.right += dxAdjust;
 						ctlPrev.SetWindowPos(NULL, &rcPrev, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 					}
 				}
 				else
 				{
-					rectCtl.right = rectCtl.left + (data.m_rect.right - data.m_rect.left);
+					rectCtl.right = rectCtl.left + (_DPI(data.m_rect.right) - _DPI(data.m_rect.left));
 				}
 			}
 
 			if((data.m_dwResizeFlags & DLSZ_CENTER_Y) != 0)
 			{
-				int cyBottom = rectGroup.bottom + cyHeight - m_sizeDialog.cy;
-				int cyCtl = data.m_rect.bottom - data.m_rect.top;
+				int cyBottom = rectGroup.bottom + cyHeight - _DPI(m_sizeDialog.cy);
+				int cyCtl = _DPI(data.m_rect.bottom) - _DPI(data.m_rect.top);
 				rectCtl.top = rectGroup.top + (cyBottom - rectGroup.top - cyCtl) / 2;
 				rectCtl.bottom = rectCtl.top + cyCtl;
 			}
 			else if((data.m_dwResizeFlags & (DLSZ_SIZE_Y | DLSZ_MOVE_Y)) != 0)
 			{
-				rectCtl.top = rectGroup.top + ::MulDiv(data.m_rect.top - rectGroup.top, rectGroup.bottom - rectGroup.top + (cyHeight - m_sizeDialog.cy), rectGroup.bottom - rectGroup.top);
+				rectCtl.top = rectGroup.top + ::MulDiv(_DPI(data.m_rect.top) - rectGroup.top, rectGroup.bottom - rectGroup.top + (cyHeight - _DPI(m_sizeDialog.cy)), rectGroup.bottom - rectGroup.top);
 
 				if((data.m_dwResizeFlags & DLSZ_SIZE_Y) != 0)
 				{
-					rectCtl.bottom = rectGroup.top + ::MulDiv(data.m_rect.bottom - rectGroup.top, rectGroup.bottom - rectGroup.top + (cyHeight - m_sizeDialog.cy), rectGroup.bottom - rectGroup.top);
+					rectCtl.bottom = rectGroup.top + ::MulDiv(_DPI(data.m_rect.bottom) - rectGroup.top, rectGroup.bottom - rectGroup.top + (cyHeight - _DPI(m_sizeDialog.cy)), rectGroup.bottom - rectGroup.top);
 
 					if(pDataPrev != NULL)
 					{
@@ -3241,14 +3316,14 @@ public:
 						RECT rcPrev = {};
 						ctlPrev.GetWindowRect(&rcPrev);
 						::MapWindowPoints(NULL, pT->m_hWnd, (LPPOINT)&rcPrev, 2);
-						int dxAdjust = (rectCtl.top - rcPrev.bottom) - (data.m_rect.top - pDataPrev->m_rect.bottom);
+						int dxAdjust = (rectCtl.top - rcPrev.bottom) - (_DPI(data.m_rect.top) - _DPI(pDataPrev->m_rect.bottom));
 						rcPrev.bottom += dxAdjust;
 						ctlPrev.SetWindowPos(NULL, &rcPrev, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 					}
 				}
 				else
 				{
-					rectCtl.bottom = rectCtl.top + (data.m_rect.bottom - data.m_rect.top);
+					rectCtl.bottom = rectCtl.top + (_DPI(data.m_rect.bottom) - _DPI(data.m_rect.top));
 				}
 			}
 		}
@@ -3256,30 +3331,30 @@ public:
 		{
 			if((data.m_dwResizeFlags & DLSZ_CENTER_X) != 0)
 			{
-				int cxCtl = data.m_rect.right - data.m_rect.left;
+				int cxCtl = _DPI(data.m_rect.right) - _DPI(data.m_rect.left);
 				rectCtl.left = (cxWidth - cxCtl) / 2;
 				rectCtl.right = rectCtl.left + cxCtl;
 			}
 			else if((data.m_dwResizeFlags & (DLSZ_SIZE_X | DLSZ_MOVE_X)) != 0)
 			{
-				rectCtl.right = data.m_rect.right + (cxWidth - m_sizeDialog.cx);
+				rectCtl.right = _DPI(data.m_rect.right) + (cxWidth - _DPI(m_sizeDialog.cx));
 
 				if((data.m_dwResizeFlags & DLSZ_MOVE_X) != 0)
-					rectCtl.left = rectCtl.right - (data.m_rect.right - data.m_rect.left);
+					rectCtl.left = rectCtl.right - (_DPI(data.m_rect.right) - _DPI(data.m_rect.left));
 			}
 
 			if((data.m_dwResizeFlags & DLSZ_CENTER_Y) != 0)
 			{
-				int cyCtl = data.m_rect.bottom - data.m_rect.top;
+				int cyCtl = _DPI(data.m_rect.bottom) - _DPI(data.m_rect.top);
 				rectCtl.top = (cyHeight - cyCtl) / 2;
 				rectCtl.bottom = rectCtl.top + cyCtl;
 			}
 			else if((data.m_dwResizeFlags & (DLSZ_SIZE_Y | DLSZ_MOVE_Y)) != 0)
 			{
-				rectCtl.bottom = data.m_rect.bottom + (cyHeight - m_sizeDialog.cy);
+				rectCtl.bottom = _DPI(data.m_rect.bottom) + (cyHeight - _DPI(m_sizeDialog.cy));
 
 				if((data.m_dwResizeFlags & DLSZ_MOVE_Y) != 0)
-					rectCtl.top = rectCtl.bottom - (data.m_rect.bottom - data.m_rect.top);
+					rectCtl.top = rectCtl.bottom - (_DPI(data.m_rect.bottom) - _DPI(data.m_rect.top));
 			}
 		}
 
