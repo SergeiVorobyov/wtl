@@ -34,14 +34,14 @@
 			<b>Windows Template Library - WTL 10</b>
 		</td>
 		<td align=right>
-			version 10.0.10320 Release (2020-11-15)
+			version 10.01 Release (2026-03-01)
 		</td>
 	</tr>
 	<tr>
 		<td colspan=2><hr></td>
 	</tr>
 	<tr>
-		<td colspan=2>Copyright &#169; 2020 Microsoft Corporation, WTL Team. All rights reserved.</td>
+		<td colspan=2>Copyright &#169; 2026 Microsoft Corporation, WTL Team. All rights reserved.</td>
 	</tr>
 	<tr>
 		<td colspan=2><br></td>
@@ -58,6 +58,8 @@
 		<td colspan=2><hr></td>
 	</tr>
 </table>
+
+<h4 style=margin:0px>- 2026 update for Visual Studio 2022/2026 and bug fixes -</h3>
 <p style=margin:0px><br></p>
 
 <p>Welcome to the Windows Template Library, version 10. This document contains the following topics:</p>
@@ -107,7 +109,7 @@
 	contribute to the library.
 </p>
 <p>
-	WTL classes can be used with all versions of VC++ from 2005 to the newest, 2019. 
+	WTL classes can be used with all versions of VC++ from 2005 to the newest, 2026. 
 	AppWizard for Visual Studio is included.
 </p>
 <p>
@@ -145,6 +147,8 @@
 	<li>Visual C++ 2015&nbsp;&nbsp;&nbsp; (ATL 14.0)</li>
 	<li>Visual C++ 2017&nbsp;&nbsp;&nbsp; (ATL 14.0)</li>
 	<li>Visual C++ 2019&nbsp;&nbsp;&nbsp; (ATL 14.0)</li>
+	<li>Visual C++ 2022&nbsp;&nbsp;&nbsp; (ATL 14.0)</li>
+	<li>Visual C++ 2026&nbsp;&nbsp;&nbsp; (ATL 14.0)</li>
 </ul>
 <p style=margin:0px><br></p>
 
@@ -1464,7 +1468,7 @@
 </ul>
 <p style=margin:0px><br></p>
 
-<p style=margin:0px>ATL/WTL AppWizard supports VC++ 2005, 2008, 2010, 2012, 2013, 2015, 2017, and 2019.</p>
+<p style=margin:0px>ATL/WTL AppWizard supports VC++ 2005, 2008, 2010, 2012, 2013, 2015, 2017, 2019, 2022, and 2026.</p>
 <p style=margin:0px><br></p>
 <p style=margin:0px><br></p>
 
@@ -1525,6 +1529,34 @@ The second line prevents name collisions between WTL and MFC. Use the WTL namesp
 		<td>1999</td>
 	</tr>
 </table>
+<p style=margin:0px><br></p>
+
+<h4>Changes After WTL 10 Release</h4>
+<p style=margin:0px>New and improved:</p>
+<blockquote style='margin-top:0px;margin-bottom:0px'>
+	<p style=margin:0px>
+		Full compatibility with VS2022 and VS2026<br>
+		DPI support for CDialogResize<br>
+	</p>
+</blockquote>
+<p style=margin:0px><br></p>
+
+<p style=margin:0px>Fixes and enhancements:</p>
+<blockquote style='margin-top:0px;margin-bottom:0px'>
+	<p style=margin:0px>
+		CFindFile::GetFileURL() - string width mismatch<br>
+		Include WTL headers from local path in atlribbon.h<br>
+		CPrintPreview::DoPaint(CDCHandle dc) - 'dc'- unreferenced parameter<br>
+		CSplitterImpl::GetSystemSettings() - Add SM_CXPADDEDBORDER to splitter bar width for VS2012 or newer<br>
+		AtlLoadSysIconImage() and AtlLoadSysCursorImage() should include and check for LR_SHARED flag<br>
+		CTreeViewCtrlT::SortChildrenCB() - exclude bRecurse argument because it is not used<br>
+		Add CUpdateUIBase::UIRemoveToolBar(), UIRemoveMenuBar(), UIRemoveStatusBar(), UIRemoveChildWindowContainer()<br>
+		Use better ATLASSERTs in CEditT::SetZoom and CRichEditCtrlT::SetZoom<br>
+		Add required casts to avoid warnings in new CEdit methods<br>
+		CRichEditFontDialogImpl::FillInLogFont() - delete DC upon use<br>
+		Samples: Added code to unregister message filtering and idle updates in OnDestroy()<br>
+	</p>
+</blockquote>
 <p style=margin:0px><br></p>
 
 <h4>Changes Between WTL 10 and 9.1</h4>
@@ -1605,6 +1637,7 @@ The second line prevents name collisions between WTL and MFC. Use the WTL namesp
 			<li>Fix for bug #317 SpinnerCtrlImpl - Failed to update string properties</li>
 			<li>Don't use function pointers to templated functions</li>
 		</ul>
+	<p style=margin:0px><br></p>
 
 	<p style=margin:0px>Cracked Handlers:</p>
 		<ul style='margin-top:0px;margin-bottom:0px'>
