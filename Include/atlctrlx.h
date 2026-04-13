@@ -1898,7 +1898,7 @@ public:
 		return Create(hWndParent, szText, dwStyle, nID);
 	}
 
-	BOOL SetPanes(int* pPanes, int nPanes, bool bSetText = true)
+	BOOL SetPanes(const int* pPanes, int nPanes, bool bSetText = true)
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
 		ATLASSERT(nPanes > 0);
